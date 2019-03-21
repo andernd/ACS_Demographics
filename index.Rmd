@@ -1,6 +1,8 @@
 
 
-##R Tutorial for Commuting Information with IPUMS USA 
+#R Tutorial for Commuting Information with IPUMS USA 
+
+##Tutorial 1: Demographic Summary Statistic Tables
 
 The first step is loading all the required packages. Some may need to be installed - use the code: install.package(name_of_package)
 
@@ -16,8 +18,30 @@ library(knitr)
 library(kableExtra)
 ```
 
+Next, you will need to retrive the data file from the IPUMS USA website. 
 
-Next, load the data files into RStudio. Both the .dat file and DDI codebook should be saved in the Working Directory.
+Vist https://usa.ipums.org/usa/index.shtml
+
+Click on "Get Data" under "Create Your Custom Data Set"
+![Figure 1](https://github.com/andernd/ACS_Demographics/raw/master/1.png)
+
+Next, create a custome data set from the given variables. The IPUMS dataset contains a substantive number of observations and variables. For the purposes of this tutorial, the only necessart variables to include are:
+AGE - Age
+HHINCOME - Household income
+RENTGRS - Gross monthly rent
+TRANWORK - Method of transportation to work
+SEX - Gender (binary)
+METRO - Metropolitan status
+
+Additional variables can be included as needed.
+
+![Figure 2](https://github.com/andernd/ACS_Demographics/raw/master/2.png)
+
+Once your custom data set has been created it must be processed. Depending on the size of the requested file this could take upwards of 30 minutes. Once the data is available for download, the green box "Download.DAT" will appear under the "Data" column. Download both the R data file as well as the DDI Codebook and save in the local Working Directory.
+
+![Figure 3](https://github.com/andernd/ACS_Demographics/raw/master/3.png) 
+
+Now we can load the data files into RStudio.
 
 ```{r message = FALSE, warning = FALSE}
 ddi <- read_ipums_ddi("usa_00003.xml")
@@ -25,7 +49,6 @@ df4 <- read_ipums_micro(ddi)
 seadf <- data.frame(df4$AGE, df4$HHINCOME, df4$RENTGRS, df4$TRANWORK, df4$TRANTIME, df4$SEX, df4$METRO, stringsAsFactors = FALSE)
 names(seadf) <- c("AGE", "INCOME", "RENT", "TRANWORK", "COMMUTE_TIME", "SEX", "METRO")
 ```
-
 
 
 Many of the variables in the IPUMS data contain missing values or numeric codes for non-responses that will impact analysis. These need to be removed or changed prior to creating summary statistics.
@@ -71,6 +94,8 @@ seadf <- drop_na(seadf, COMMUTE_TYPE)
 
 Once the data has beeen prepared for analysis, the next step is to create a table of summary statistics for each cell in the matrix. The first table in this example includes information for the entire Seattle data set. Each subsequent table creates a subsetted dataframe based on METRO and provides summary statistics for the row in the matrix. 
 
+###Table for all observations
+
 ```{r message = FALSE, warning = FALSE}
 #Creating a table of summary statistics for all the data
 
@@ -104,8 +129,7 @@ test %>%
 ```
 
 
-
-
+###Table for all urban commuters
 
 ```{r message = FALSE, warning = FALSE}
 #Summary statistics for urban commuters
@@ -137,6 +161,7 @@ urban_table %>%
 ```
 
 
+###Table for all non-urban commuters
 
 ```{r message = FALSE, warning = FALSE}
 #Summary statistics for non-urban commuters
@@ -168,6 +193,8 @@ non_urban_table %>%
   pack_rows("Commute Time", 5, 6)
 ```
 
+###Table for all mixed-use/suburban commuters
+
 ```{r message = FALSE, warning = FALSE}
 #Summary statistics for mixed commuters
 
@@ -198,119 +225,28 @@ mixed_table %>%
   pack_rows("Commute Time", 5, 6)
 ```
 
-After we have obtained summary statistics, we can begin looking at the interaction between commute type, proximity to downtown, and values. Because the indicator for value has not been measured either in this sample or created as an additonal variable through a survey, indicators will be generated randomly in a normal distribution between 0 and 1 (0 being the weakest indicator and 1 being the strongest). 
+##Tutorial 2: Creating Radar Plots of Values
 
-```{r message = FALSE, warning = FALSE}
-#This set of code generates a random indicator for value, it is not a necessary component of the final toolkit 
-#find row values to see random seeds
-nrow(urbandata)
-nrow(non_urbandata)
-nrow(mixeddata)
-```
+The next stage is to incorporate insight about values gained from the community engagement tool in this toolkit. Once the values have been coded as indexes, we can add them to a new dataframe to use for plotting.
 
+NOTE: the values used below are not based on observed data. For the purposes of this tutorial, we have inserted random values into the index scores to make plotting possible. 
 
 ```{r}
-#setting value variable as normal distribution between 0 and 1
-value_urban_hedo <- rtruncnorm(52277, a=0, b=1)
-value_urban_bio <- rtruncnorm(52277, a=0, b=1)
-value_urban_ego <- rtruncnorm(52277, a=0, b=1)
-value_urban_altru <- rtruncnorm(52277, a=0, b=1)
+#creating a new dataframe with set meanavlues for radar plots
 
-urbandata$value_hedo <- value_urban_hedo
-urbandata$value_ego <- value_urban_ego
-urbandata$value_bio <- value_urban_bio
-urbandata$value_altru <- value_urban_altru
-
-value_nonurban_hedo <- rtruncnorm(69011, a=0, b=1)
-value_nonurban_bio <- rtruncnorm(69011, a=0, b=1)
-value_nonurban_ego <- rtruncnorm(69011, a=0, b=1)
-value_nonurban_altru <- rtruncnorm(69011, a=0, b=1)
-
-non_urbandata$value_hedo <- value_nonurban_hedo
-non_urbandata$value_ego <- value_nonurban_ego
-non_urbandata$value_bio <- value_nonurban_bio
-non_urbandata$value_altru <- value_nonurban_altru
-
-value_mixed_hedo <- rtruncnorm(104665, a=0, b=1)
-value_mixed_bio <- rtruncnorm(104665, a=0, b=1)
-value_mixed_ego <- rtruncnorm(104665, a=0, b=1)
-value_mixed_altru <- rtruncnorm(104665, a=0, b=1)
-
-mixeddata$value_hedo <- value_mixed_hedo
-mixeddata$value_ego <- value_mixed_ego
-mixeddata$value_bio <- value_mixed_bio
-mixeddata$value_altru <- value_mixed_altru
-```
-
-Now that we have established value indicators for each observation, we need to find the mean for each cell in the matrix. This will allow us to visualize the values on a radar plot.
-
-```{r message = FALSE, warning = FALSE, results=FALSE}
-#mean for urban private motorized vehicle hedo
-mean(urbandata$value_hedo[urbandata$TRANWORK>=10 & urbandata$TRANWORK<=20])
-
-#mean for urban public transportation hedo
-mean(urbandata$value_hedo[urbandata$TRANWORK>=30 & urbandata$TRANWORK<=36])
-
-#mean for urban bike/walk/other hedo
-mean(urbandata$value_hedo[urbandata$TRANWORK>=40 & urbandata$TRANWORK<=60])
-
-#mean for urban private motorized vehicle ego
-mean(urbandata$value_ego[urbandata$TRANWORK>=10 & urbandata$TRANWORK<=20])
-
-#mean for urban public transportation ego
-mean(urbandata$value_ego[urbandata$TRANWORK>=30 & urbandata$TRANWORK<=36])
-
-#mean for urban bike/walk/other ego
-mean(urbandata$value_ego[urbandata$TRANWORK>=40 & urbandata$TRANWORK<=60])
-
-#mean for urban private motorized vehicle altru
-mean(urbandata$value_altru[urbandata$TRANWORK>=10 & urbandata$TRANWORK<=20])
-
-#mean for urban public transportation altru
-mean(urbandata$value_altru[urbandata$TRANWORK>=30 & urbandata$TRANWORK<=36])
-
-#mean for urban bike/walk/other altru
-mean(urbandata$value_altru[urbandata$TRANWORK>=40 & urbandata$TRANWORK<=60])
-
-#mean for urban private motorized vehicle bio
-mean(urbandata$value_bio[urbandata$TRANWORK>=10 & urbandata$TRANWORK<=20])
-
-#mean for urban public transportation bio
-mean(urbandata$value_bio[urbandata$TRANWORK>=30 & urbandata$TRANWORK<=36])
-
-#mean for urban bike/walk/other bio
-mean(urbandata$value_bio[urbandata$TRANWORK>=40 & urbandata$TRANWORK<=60])
-```
-
-```{r message = FALSE, warning = FALSE}
-#Creating a dataframe with average value indicators
-
-hedo_urban <- c(mean(urbandata$value_hedo[urbandata$TRANWORK>=10 & urbandata$TRANWORK<=20]), mean(urbandata$value_hedo[urbandata$TRANWORK>=30 & urbandata$TRANWORK<=36]), mean(urbandata$value_hedo[urbandata$TRANWORK>=40 & urbandata$TRANWORK<=60]))
-ego_urban <- c(mean(urbandata$value_ego[urbandata$TRANWORK>=10 & urbandata$TRANWORK<=20]), mean(urbandata$value_ego[urbandata$TRANWORK>=30 & urbandata$TRANWORK<=36]), mean(urbandata$value_ego[urbandata$TRANWORK>=40 & urbandata$TRANWORK<=60]))
-altru_urban <- c(mean(urbandata$value_altru[urbandata$TRANWORK>=10 & urbandata$TRANWORK<=20]), mean(urbandata$value_altru[urbandata$TRANWORK>=30 & urbandata$TRANWORK<=36]), mean(urbandata$value_altru[urbandata$TRANWORK>=40 & urbandata$TRANWORK<=60]))
-bio_urban <- c(mean(urbandata$value_bio[urbandata$TRANWORK>=10 & urbandata$TRANWORK<=20]), mean(urbandata$value_bio[urbandata$TRANWORK>=30 & urbandata$TRANWORK<=36]), mean(urbandata$value_bio[urbandata$TRANWORK>=40 & urbandata$TRANWORK<=60]))
-group <- c("Private Motorized Vehicle", "Public Transportation", "Bike/Walk/Other")
-
-radar_urban <- data.frame(group, hedo_urban, ego_urban, altru_urban, bio_urban)
-
-
-```
-
-```{r}
-#creating a new datafram with set meanavlues for radar plots
+#Note: while the order of the index values does not affect the analysis, ensure that each index is entered in the same order for each new object. Here, the first index is for "Bike/Walk/Other", the second for "Private Motorized Vehicle", and the third for "Public Transit"
 
 hedo_urban <- c(0.52, 0.41, .35)
 ego_urban <- c(0.42, 0.32, 0.34)
 altru_urban <- c(0.3, 0.52, 0.54)
 bio_urban <- c(0.41, 0.56, 0.58)
 
+#Subset by group
+group <- c("Private Motorized Vehicle", "Public Transportation", "Bike/Walk/Other")
+
+#Add the objects to a dataframe for plotting
 radar_urban_test <- data.frame(group, hedo_urban, ego_urban, altru_urban, bio_urban)
 
-```
-
-
-```{r}
-View(radar_urban)
 ```
 
 
@@ -325,6 +261,10 @@ plot1 = base + geom_polygon(fill = 'gray',col='orange') + coord_polar()
 
 plot2 = plot1 + facet_wrap(~group,
                            ncol = 3) 
-plot2
+plot2 + theme_bw() + labs(y='Index Score',
+                          x=NULL)
 ```
 
+We can now interpret the results. Each index is plotted into a different corner of the cell. Shaded areas approaching the outside of the cell represent higher values in that category. For example, here we see that people in the "Bike/Walk/Other" category have higher values for bioshperic and altruistic values (NOTE: These values do not reflect actual data). As a result, communications toward these groups should appeal to these sets of values.
+
+Repeat the above steps for non-urban and mised-use/suburb commuters to complete the full 9x9 matrix. 
