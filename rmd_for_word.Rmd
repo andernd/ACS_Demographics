@@ -1,8 +1,9 @@
 ---
-output:
-  pdf_document: default
-  word_document: default
-  html_document: default
+title: "R Tutorial for Commuting Information with IPUMS USA"
+author: Nathan Anderson-Hobbs
+date: March 22, 2005
+output: word_document
+always_allow_html: yes
 ---
 
 

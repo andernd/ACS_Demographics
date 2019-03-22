@@ -24,7 +24,7 @@ library(knitr)
 library(kableExtra)
 ```
 
-Next, you will need to retrieve the data file from the IPUMS USA website. 
+Next, you will need to retrive the data file from the IPUMS USA website. 
 
 Vist https://usa.ipums.org/usa/index.shtml
 
@@ -100,7 +100,7 @@ seadf <- drop_na(seadf, COMMUTE_TYPE)
 ```
 
 
-Once the data has been prepared for analysis, the next step is to create a table of summary statistics for each cell in the matrix. The first table in this example includes information for the entire Seattle data set. Each subsequent table creates a subsetted dataframe based on METRO and provides summary statistics for the row in the matrix. 
+Once the data has beeen prepared for analysis, the next step is to create a table of summary statistics for each cell in the matrix. The first table in this example includes information for the entire Seattle data set. Each subsequent table creates a subsetted dataframe based on METRO and provides summary statistics for the row in the matrix. 
 
 ###Table for all observations
 
@@ -268,6 +268,6 @@ plot2 + theme_bw() + labs(y='Index Score',
                           x=NULL)
 ```
 
-We can now interpret the results. Each index is plotted into a different corner of the cell. Shaded areas approaching the outside of the cell represent higher values in that category. For example, here we see that people in the "Bike/Walk/Other" category have higher values for biospheric and altruistic values (NOTE: These values do not reflect actual data). As a result, communications toward these groups should appeal to these sets of values.
+We can now interpret the results. Each index is plotted into a different corner of the cell. Shaded areas approaching the outside of the cell represent higher values in that category. For example, here we see that people in the "Bike/Walk/Other" category have higher values for bioshperic and altruistic values (NOTE: These values do not reflect actual data). As a result, communications toward these groups should appeal to these sets of values.
 
-Repeat the above steps for non-urban and mixed-use/suburban commuters to complete the full 9x9 matrix. 
+Repeat the above steps for non-urban and mised-use/suburb commuters to complete the full 9x9 matrix. 
