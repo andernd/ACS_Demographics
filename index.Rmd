@@ -13,7 +13,7 @@ output:
 The first step is loading all the required packages. Some may need to be installed - use the code: install.package(name_of_package)
 
 ```{r message = FALSE, warning = FALSE}
-#loading all the necessary packages library
+#loading all the necessary libraries
 library(ipumsr)
 library(truncnorm)
 library(reshape2)
@@ -31,19 +31,20 @@ Vist https://usa.ipums.org/usa/index.shtml
 Click on "Get Data" under "Create Your Custom Data Set"
 ![Figure 1](https://github.com/andernd/ACS_Demographics/raw/master/1.png)
 
-Next, create a custome data set from the given variables. The IPUMS dataset contains a substantive number of observations and variables. For the purposes of this tutorial, the only necessart variables to include are:
-AGE - Age
-HHINCOME - Household income
-RENTGRS - Gross monthly rent
-TRANWORK - Method of transportation to work
-SEX - Gender (binary)
-METRO - Metropolitan status
+Next, create a custom data set from the given variables. The IPUMS dataset contains a substantive number of observations and variables. For the purposes of this tutorial, the only necessary variables to include are:
+
+* AGE - Age
+* HHINCOME - Household income
+* RENTGRS - Gross monthly rent
+* TRANWORK - Method of transportation to work
+* SEX - Gender (binary)
+* METRO - Metropolitan status
 
 Additional variables can be included as needed.
 
 ![Figure 2](https://github.com/andernd/ACS_Demographics/raw/master/2.png)
 
-Once your custom data set has been created it must be processed. Depending on the size of the requested file this could take upwards of 30 minutes. Once the data is available for download, the green box "Download.DAT" will appear under the "Data" column. Download both the R data file as well as the DDI Codebook and save in the local Working Directory.
+Once your custom data set has been created it must be processed. Depending on the size of the requested file this could take upwards of 30 minutes. Once the data is available for download, the green box with "Download.DAT" will appear under the "Data" column. Download both the R data file as well as the DDI Codebook and save in the local Working Directory.
 
 ![Figure 3](https://github.com/andernd/ACS_Demographics/raw/master/3.png) 
 
@@ -53,13 +54,14 @@ Now we can load the data files into RStudio.
 ddi <- read_ipums_ddi("usa_00003.xml")
 df4 <- read_ipums_micro(ddi)
 seadf <- data.frame(df4$AGE, df4$HHINCOME, df4$RENTGRS, df4$TRANWORK, df4$TRANTIME, df4$SEX, df4$METRO, stringsAsFactors = FALSE)
+#Changing the names of the variables so they are easier to work with
 names(seadf) <- c("AGE", "INCOME", "RENT", "TRANWORK", "COMMUTE_TIME", "SEX", "METRO")
 ```
 
 
 Many of the variables in the IPUMS data contain missing values or numeric codes for non-responses that will impact analysis. These need to be removed or changed prior to creating summary statistics.
 ```{r}
-#Changing HHINCOME to not replace 9999999 values as NA
+#Changing INCOME to replace 9999999 values as NA
 seadf <- seadf %>%
  mutate(INCOME = replace(INCOME, INCOME == 9999999, NA))
 ```
@@ -126,6 +128,7 @@ test <- summary_table(dplyr::group_by(seadf, COMMUTE_TYPE), sumtable1)
 #Naming the columns
 colnames(test) <- c("Bike/Walk/Other", "Private Motorized Vehicle", "Public Transit")
 
+#Putting the datafram into table format to plot
 test %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover"), font_size = 13) %>%
@@ -153,10 +156,8 @@ sumtable2 <-
          list('Average (sd)'=~qwraps2::mean_sd(COMMUTE_TIME, denote_sd='paren'),
               'Median and IQR)'=~qwraps2::median_iqr(COMMUTE_TIME)))
 
-#Putting the summary statistics into a dataframe
 urban_table <- summary_table(dplyr::group_by(urbandata, COMMUTE_TYPE), sumtable2)
 
-#Naming the columns
 colnames(urban_table) <- c("Bike/Walk/Other", "Private Motorized Vehicle", "Public Transit")
 
 urban_table %>%
@@ -186,10 +187,8 @@ sumtable3 <-
          list('Average (sd)'=~qwraps2::mean_sd(COMMUTE_TIME, denote_sd='paren'),
               'Median and IQR)'=~qwraps2::median_iqr(COMMUTE_TIME)))
 
-#Putting the summary statistics into a dataframe
 non_urban_table <- summary_table(dplyr::group_by(non_urbandata, COMMUTE_TYPE), sumtable2)
 
-#Naming the columns
 colnames(non_urban_table) <- c("Bike/Walk/Other", "Private Motorized Vehicle", "Public Transit")
 
 non_urban_table %>%
@@ -218,10 +217,8 @@ sumtable4 <-
          list('Average (sd)'=~qwraps2::mean_sd(COMMUTE_TIME, denote_sd='paren'),
               'Median and IQR)'=~qwraps2::median_iqr(COMMUTE_TIME)))
 
-#Putting the summary statistics into a dataframe
 mixed_table <- summary_table(dplyr::group_by(mixeddata, COMMUTE_TYPE), sumtable2)
 
-#Naming the columns
 colnames(mixed_table) <- c("Bike/Walk/Other", "Private Motorized Vehicle", "Public Transit")
 
 mixed_table %>%
@@ -233,14 +230,14 @@ mixed_table %>%
 
 ##Tutorial 2: Creating Radar Plots of Values
 
-The next stage is to incorporate insight about values gained from the community engagement tool in this toolkit. Once the values have been coded as indexes, we can add them to a new dataframe to use for plotting.
+The next stage is to incorporate a variable for values that has been obtained from the community engagement tool in this toolkit. Once the values have been coded as indexes, we can add them to a new dataframe to use for plotting.
 
 NOTE: the values used below are not based on observed data. For the purposes of this tutorial, we have inserted random values into the index scores to make plotting possible. 
 
 ```{r}
 #creating a new dataframe with set meanavlues for radar plots
 
-#Note: while the order of the index values does not affect the analysis, ensure that each index is entered in the same order for each new object. Here, the first index is for "Bike/Walk/Other", the second for "Private Motorized Vehicle", and the third for "Public Transit"
+#Note: while the order of the index values does not affect the analysis, make sure that each index is entered in the same order for each new object. Here, the first index is for "Bike/Walk/Other", the second for "Private Motorized Vehicle", and the third for "Public Transit"
 
 hedo_urban <- c(0.52, 0.41, .35)
 ego_urban <- c(0.42, 0.32, 0.34)
