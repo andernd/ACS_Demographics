@@ -235,7 +235,7 @@ The next stage is to incorporate a variable for values that has been obtained fr
 NOTE: the values used below are not based on observed data. For the purposes of this tutorial, we have inserted random values into the index scores to make plotting possible. 
 
 ```{r}
-#creating a new dataframe with set meanavlues for radar plots
+#creating a new dataframe with set mean values for radar plots
 
 #Note: while the order of the index values does not affect the analysis, make sure that each index is entered in the same order for each new object. Here, the first index is for "Bike/Walk/Other", the second for "Private Motorized Vehicle", and the third for "Public Transit"
 
